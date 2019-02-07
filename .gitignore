@@ -1,0 +1,5 @@
+.env
+node_modules/
+store.sqlite
+.DS_Store
+**/.DS_Store
