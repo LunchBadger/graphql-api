@@ -5,6 +5,9 @@ const typeDefs = gql`
   scalar JSON
 
   type Query {
+    loadSharedProjects(
+      username: String!
+    ): SharedProjects!
     saveProject(
       projectBaseURL: String!
       workspaceBaseURL: String!
@@ -95,6 +98,20 @@ const typeDefs = gql`
     serviceEndpoints: [JSON]
     apiEndpoints: [JSON]
     apis: [JSON]
+  }
+
+  type SharedProjects {
+    username: String!
+    sharedProjects: [SharedProject]!
+  }
+
+  type SharedProject {
+    username: String!
+    projects: [ProjectBasics]!
+  }
+
+  type ProjectBasics {
+    name: String!
   }
 `;
 

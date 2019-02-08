@@ -30,9 +30,44 @@ const egTransformPipeline = (data, pipeline) => {
   return json;
 };
 
+const fakeSharedProjectUsernames = [
+  'al',
+  'al2',
+  'ko',
+  'sk',
+];
+
+const sortStrings = key => (a, b) => {
+  var nameA = a[key].toUpperCase();
+  var nameB = b[key].toUpperCase();
+  if (nameA < nameB) return -1;
+  if (nameA > nameB) return 1;
+  return 0;
+}
+
 module.exports = {
   JSON: GraphQLJSON,
   Query: {
+    loadSharedProjects: async (_, { username }, { dataSources }) => {
+      const usernames = [...fakeSharedProjectUsernames];
+      if (!usernames.includes(username)) {
+        usernames.push(username);
+      }
+      const projects = usernames.map(user => ({
+        username: user,
+        projects: [{name: 'dev'}],
+      }));
+      const sharedProjects = [
+        ...projects.filter(p => p.username === username),
+        ...projects
+          .filter(p => p.username !== username)
+          .sort(sortStrings('username')),
+      ];
+      return {
+        username,
+        sharedProjects,
+      };
+    },
     saveProject: async (_, { projectBaseURL, workspaceBaseURL, projectId, data: dataStr }, {dataSources }) => {
       const calls = [];
       console.log(dataStr);
