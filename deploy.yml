@@ -1,0 +1,33 @@
+#temp file before migrating to helm
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: graphql-gateway-deployment
+spec:
+  selector:
+    matchLabels:
+      app: graphql-gateway
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: graphql-gateway
+    spec:
+      containers:
+      - name: graphql-gateway
+        image: 410240865662.dkr.ecr.us-west-2.amazonaws.com/graphql:0.1.0
+        ports:
+        - containerPort: 4000
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: graphql-service
+spec:
+  selector:
+    app: graphql-gateway
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 4000
