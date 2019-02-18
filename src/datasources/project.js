@@ -6,6 +6,14 @@ class ProjectAPI extends RESTDataSource {
     this.baseURL = '';
   }
 
+  async getSharedProjects({ username }) {
+    // localhost:9999
+    // git-api.default
+    const host = 'http://git-api.default';
+    const res = await this.get(`${host}/users/customer/${username}/myrepos`);
+    return res;
+  }
+
   async getProject({ projectBaseURL, projectId }) {
     const res = await this.get(`${projectBaseURL}/Projects/${projectId}`);
     return res;

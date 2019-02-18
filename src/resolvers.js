@@ -1,6 +1,45 @@
 const { paginateResults } = require('./utils');
 const GraphQLJSON = require('graphql-type-json');
 
+const transformMyRepos = (data) => {
+  const repos = data.repos
+    .map(({owner, name: project, permissions}) => ({
+      username: owner.username.replace('customer-', ''),
+      project,
+      permissions,
+    }))
+    .reduce((map, {username, project, permissions}) => ({
+      ...map,
+      [username]: {
+        ...(map[username] || {}),
+        [project]: permissions
+      },
+    }), {});
+  return Object.keys(repos)
+    .reduce((map, username) => [
+      ...map,
+      {
+        username,
+        projects: repos[username],
+      }
+    ], [])
+    .filter(({projects}) => true
+      && projects.dev
+      && projects.dev.push
+      && projects.dev.pull
+      && projects.functions
+      && projects.functions.push
+      && projects.functions.pull
+    )
+    .map(({username, projects}) => ({
+      username,
+      projects: [{
+        name: 'dev',
+        permissions: projects.dev,
+      }],
+    }));
+};
+
 const loadProjectData = async ({ projectBaseURL, workspaceBaseURL, projectId }, {dataSources }) => {
   const project = await dataSources.projectAPI.getProject({ projectBaseURL, projectId});
   const datasources = await dataSources.workspaceAPI.getDatasources({ workspaceBaseURL});
@@ -49,23 +88,10 @@ module.exports = {
   JSON: GraphQLJSON,
   Query: {
     loadSharedProjects: async (_, { username }, { dataSources }) => {
-      const usernames = [...fakeSharedProjectUsernames];
-      if (!usernames.includes(username)) {
-        usernames.push(username);
-      }
-      const projects = usernames.map(user => ({
-        username: user,
-        projects: [{name: 'dev'}],
-      }));
-      const sharedProjects = [
-        ...projects.filter(p => p.username === username),
-        ...projects
-          .filter(p => p.username !== username)
-          .sort(sortStrings('username')),
-      ];
+      const myRepos = await dataSources.projectAPI.getSharedProjects({ username });
       return {
         username,
-        sharedProjects,
+        sharedProjects: transformMyRepos(myRepos),
       };
     },
     saveProject: async (_, { projectBaseURL, workspaceBaseURL, projectId, data: dataStr }, {dataSources }) => {

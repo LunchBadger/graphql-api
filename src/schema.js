@@ -112,6 +112,13 @@ const typeDefs = gql`
 
   type ProjectBasics {
     name: String!
+    permissions: Permissions
+  }
+
+  type Permissions {
+    admin: Boolean
+    push: Boolean
+    pull: Boolean
   }
 `;
 
